@@ -1,0 +1,24 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<script type="text/javascript" src="{{ url_for('static', filename='jquery-1.12.0.js' )}}"></script>
+
+
+<div class=page>
+    <a class="title">{{ title }}</a>
+        {% block body %}
+        {% endblock %}
+    <br>
+    <a href="{{ url_for("home") }}">Home</a>
+</div>
+</body>
+
+</html>

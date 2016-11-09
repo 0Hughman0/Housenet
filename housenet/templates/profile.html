@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block body %}
+    <br>
+    <a>Your chore this week: {{current_chore.title}}</a> <a href="{{ url_for("get_ical", name=title) }}">(download)</a>
+    <br>
+    <br>
+    <form method="post" name="You Owe">
+    <table>
+    <tr>
+        <td colspan="3"><a>You Owe:</a></td>
+    </tr>
+    {% for _, to, amount in debts %}
+        <tr>
+            <td><a>{{ to }}:</a></td><td><a>£{{ amount }} + </a></td><td><input type="number" name="{{ to }}" step="any"></td>
+        </tr>
+        {% else %}
+        <tr>
+            <td><a>... No-one! You're in the clear :D</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    <table>
+    <tr>
+        <td colspan="3"><a>These People Owe You:</a></td>
+    </tr>
+    {% for from, _, amount in debits %}
+        <tr>
+            <td><a>{{ from }}:</a></td><td><a>£{{ amount }} - </a></td><td><input type="number" name="{{ from }}" step="any"></td>
+        </tr>
+        {% else %}
+        <tr>
+            <td><a>Nowt... consider being more generous</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    <table>
+    <tr>
+        <td colspan="3"><a>You're quits with these guys:</a></td>
+    </tr>
+    {% for from, to, _ in quits %}
+        <tr>
+            <td><a>{{ from }}</a></td><td><a>You now owe:</a></td><td><input type="number" name="{{ from }}" step="any">
+        </tr>
+        {% else %}
+        <tr>
+            <td><a>No-one! Maybe You need to put some effort in</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    </td>
+    </tr>
+    <tr>
+        <td colspan="3"><input type="submit" value="Update"></td>
+    </tr>
+    </table>
+    </form>
+{% endblock %}

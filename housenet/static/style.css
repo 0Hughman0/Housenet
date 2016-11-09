@@ -1,0 +1,42 @@
+div.page{
+    border: 3px solid;
+    margin: 5% 5%;
+    padding: 1% 1%;
+    text-align: center;
+}
+
+.leftpanel,
+#.page{
+    width: auto;
+    float: left;
+}
+
+.rightpanel,
+#.page{
+    width: 200px;
+    float: right;
+}
+img.profilepic{
+    width: 150px;
+    height: 150px;
+}
+img.menu_icon{
+    width: 50%;
+    height: 50%;
+}
+a{
+    font-family: "Arial Black";
+}
+a.title,
+#a{
+    font-size: x-large;
+    text-align: center;
+}
+td{
+    width: 30%;
+    text-align: center;
+}
+table{
+    text-align: center;
+    margin: auto auto;
+}

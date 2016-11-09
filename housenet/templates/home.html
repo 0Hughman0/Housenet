@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+    <br>
+    {% for name in names %}
+        <a href="{{ url_for('profile', name=name) }}"><img src="{{ url_for("static", filename='{}.jpeg'.format(name)) }}" class="profilepic" ></a>
+    {% endfor %}
+    <br>
+    <a href="{{ url_for("chores") }}">View who's doing what</a>
+    <br>
+{% endblock %}

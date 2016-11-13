@@ -19,20 +19,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 
+@app.context_processor
+def inject_vars():
+    values = {}
+    housemate_names = (housemate.name for housemate in Housemate.query.all())
+    values['names'] = housemate_names
+    return values
+
+
 @app.route('/')
 def home():
-    housemates = Housemate.query.all()
-    names = (housemate.name for housemate in housemates)
-    return render_template("home.html", title="Select your face to go to your page", names=names)
-
-
-@app.route('/chores')
-def chores():
     housemates = Housemate.query.all()
     data = []
     for housemate in housemates:
         data.append(tuple((housemate.name, housemate.current_chore.title)))
-    return render_template("chores.html", title="Chores", data=data)
+    return render_template("home.html", title="Home", data=data)
 
 
 @app.route("/profile/<name>", methods=["POST", "GET"])

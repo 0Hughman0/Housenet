@@ -1,24 +1,47 @@
-<!doctype html>
+{% extends "bootstrap/base.html" %}
 
-<html>
+{% block navbar %}
+<! block navbar start>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for("home") }}">Home</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Select Housemate<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                        {% for name in names %}
+                            <li><a href="{{ url_for("profile", name=name) }}">{{ name }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <! block navbar end>
+{% endblock %}
 
-<head>
+<! block body start>
+{% block body %}
 
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-</head>
+    <div class="container">
+    <div class="page-header">
+        <h1>{{ title }}</h1>
+    </div>
 
-<body>
-
-<script type="text/javascript" src="{{ url_for('static', filename='jquery-1.12.0.js' )}}"></script>
-
-
-<div class=page>
-    <a class="title">{{ title }}</a>
-        {% block body %}
-        {% endblock %}
-    <br>
-    <a href="{{ url_for("home") }}">Home</a>
-</div>
-</body>
-
-</html>
+    <! block content start>
+    {% block content %}
+    {% endblock %}
+    <! block content end>
+    </div>
+{% endblock %}
+<! block body end>

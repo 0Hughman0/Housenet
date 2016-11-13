@@ -1,57 +1,108 @@
 {% extends "layout.html" %}
-{% block body %}
-    <br>
-    <a>Your chore this week: {{current_chore.title}}</a> <a href="{{ url_for("get_ical", name=title) }}">(download)</a>
-    <br>
-    <br>
-    <form method="post" name="You Owe">
-    <table>
-    <tr>
-        <td colspan="3"><a>You Owe:</a></td>
-    </tr>
-    {% for _, to, amount in debts %}
-        <tr>
-            <td><a>{{ to }}:</a></td><td><a>£{{ amount }} + </a></td><td><input type="number" name="{{ to }}" step="any"></td>
-        </tr>
-        {% else %}
-        <tr>
-            <td><a>... No-one! You're in the clear :D</a></td>
-        </tr>
-    {% endfor %}
-    </table>
-    <table>
-    <tr>
-        <td colspan="3"><a>These People Owe You:</a></td>
-    </tr>
-    {% for from, _, amount in debits %}
-        <tr>
-            <td><a>{{ from }}:</a></td><td><a>£{{ amount }} - </a></td><td><input type="number" name="{{ from }}" step="any"></td>
-        </tr>
-        {% else %}
-        <tr>
-            <td><a>Nowt... consider being more generous</a></td>
-        </tr>
-    {% endfor %}
-    </table>
-    <table>
-    <tr>
-        <td colspan="3"><a>You're quits with these guys:</a></td>
-    </tr>
-    {% for from, to, _ in quits %}
-        <tr>
-            <td><a>{{ from }}</a></td><td><a>You now owe:</a></td><td><input type="number" name="{{ from }}" step="any">
-        </tr>
-        {% else %}
-        <tr>
-            <td><a>No-one! Maybe You need to put some effort in</a></td>
-        </tr>
-    {% endfor %}
-    </table>
-    </td>
-    </tr>
-    <tr>
-        <td colspan="3"><input type="submit" value="Update"></td>
-    </tr>
-    </table>
-    </form>
+{% block content %}
+    <div class="alert alert-success">
+        <h3>This weeks chore:
+            <span class="label label-danger">{{current_chore.title}}</span>
+            <a href="{{ url_for("get_ical", name=title) }}">
+                <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+            </a>
+        </h3>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4>Your IOUs</h4></div>
+        <form method="post" name="You Owe">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="panel-body">
+                        <div class="col-md-4">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">You Owe</div>
+                                <div class="panel-body">
+                                    <table class="table">
+                                        <tr>
+                                            <th>To</th><th>Amount</th><th>Update</th>
+                                        </tr>
+                                        {% for _, to, amount in debts %}
+                                        <tr>
+                                            <td>{{ to }}</td><td>£{{ amount }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <div class="input-group-addon">+£</div>
+                                                    <input class="form-control" type="number" name="{{ to }}" step="any">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="3">... No-one! You're in the clear :D</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">I'm Owed:</div>
+                                <div class="panel-body">
+                                    <table class="table">
+                                        <tr>
+                                            <th>From</th><th>Amount</th><th>Update</th>
+                                        </tr>
+                                        {% for from, _, amount in debits %}
+                                        <tr>
+                                            <td>{{ from }}</td><td>£{{ amount }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <div class="input-group-addon">-£</div>
+                                                    <input class="form-control" type="number" name="{{ from }}" step="any">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="3">Nowt... consider being more generous</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">You're Quits with:</div>
+                                <div class="panel-body">
+                                    <table class="table">
+                                        <tr>
+                                            <th>Person</th><th>Now Owe</th>
+                                        </tr>
+                                        {% for from, to, _ in quits %}
+                                        <tr>
+                                            <td>{{ from }}</td>
+                                            <td>
+                                            <div class="input-group">
+                                                <div class="input-group-addon">+£</div>
+                                                <input class="form-control" type="number" name="{{ from }}" step="any">
+                                            </div>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="2">No-one! Maybe You need to put some effort in</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="container-fluid">
+                                <input class="btn btn-primary btn-block" type="submit" value="Update">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endblock %}

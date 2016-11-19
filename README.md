@@ -30,6 +30,11 @@ Housenet creates profile pages for each housemate which provides two main functi
 * Set the `FLASK_APP` enviroment variable to the path to the `housenet.py` file e.g. on debian `export FLASK_APP=/home/pi/Housenet/housenet/housenet.py`
 * Replace the template profile pictures found in `.../housenet/static` in the form `housematename.jpeg`
 * Reinitialise the database with the new config using `flask reloaddb`
+
+## Running the server
+
+* Activate the virtual env created earlier
+* `FLASK_APP` enviroment variable to the path to the `housenet.py` file e.g. on debian `export FLASK_APP=/home/pi/Housenet/housenet/housenet.py` (this can be added to the activate script of your virtual env for convenience)
 * Start the server with `flask run --host="0.0.0.0"`
 * Go to another computer on your network and head to IP.TO.HOST.DEVICE:5000 and housenet should be up and running!
 

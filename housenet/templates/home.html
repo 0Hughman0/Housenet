@@ -10,7 +10,7 @@
                         <div class="container-fluid">
                         <div class="row">
                             <div class="col-md-12">
-                        <a href="{{ url_for("profile", name=name) }}"><img src="{{ url_for("static", filename="{}.jpg".format(name)) }}" class="img img-thumbnail center-block"></a>
+                        <a href="{{ url_for("base_app.profile", name=name) }}"><img src="{{ url_for("base_app.static", filename="{}.jpg".format(name)) }}" class="img img-thumbnail center-block"></a>
                                 </div>
                         </div>
                         <div class="row">

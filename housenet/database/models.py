@@ -1,11 +1,37 @@
 import datetime
 import shutil
+from collections import namedtuple
 
-from flask_sqlalchemy import SQLAlchemy
-from ..utilities import ConfigGrid, Cell, path_for, timestamp
+
 import icalendar as ical
+from ez_grid import Grid
 
-db = SQLAlchemy()
+from . import db
+from ..utilities import path_for, timestamp
+
+
+class HousematesGrid(Grid):
+
+    def add_to_db(self):
+        for housemate in self.cells:
+            db.session.add(Housemate(name=housemate.row))
+
+
+class ChoresGrid(Grid):
+
+    def add_to_db(self):
+        for chore in self.cells:
+            start_date = datetime.datetime.strptime(chore.col, "%d/%m/%Y")
+            end_date = start_date + datetime.timedelta(days=7)
+            db.session.add(Chore(title=chore.value, who_id=chore.row, start_date=start_date, end_date=end_date))
+
+
+class MunsGrid(Grid):
+
+    def add_to_db(self):
+        for debt in self.cells:
+            if not debt.row == debt.col:
+                db.session.add(Cashflow(to_name=debt.row, from_name=debt.col, _amount=float(debt.value)))
 
 
 class Housemate(db.Model):
@@ -24,6 +50,17 @@ class Housemate(db.Model):
 
     quits = db.relationship("Cashflow",
                             primaryjoin="and_(Cashflow.to_name==Housemate.name, Cashflow._amount==0)")
+
+    @staticmethod
+    def names():
+        return (housemate.name for housemate in Housemate.query.all())
+
+    @staticmethod
+    def as_grid():
+        housemates_grid = HousematesGrid(Housemate.names(), ["null"], "Housemates")
+        for housemate in Housemate.query.all():
+            housemates_grid[housemate.name]["null"] = "null"
+        return housemates_grid
 
     @property
     def current_chore(self):
@@ -58,6 +95,19 @@ class Chore(db.Model):
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date)
 
+    @staticmethod
+    def dates():
+        dates = list(set((chore.start_date for chore in Chore.query.all())))
+        dates.sort()
+        return dates
+
+    @staticmethod
+    def as_grid():
+        chores_grid = ChoresGrid(Housemate.names(), Chore.dates(), "Chores")
+        for chore in Chore.query.all():
+            chores_grid[chore.who_id][chore.start_date] = chore.title
+        return chores_grid
+
 
 class Cashflow(db.Model):
     __tablename__ = "cashflows"
@@ -68,6 +118,13 @@ class Cashflow(db.Model):
     from_name = db.Column(db.String, db.ForeignKey("housemates.name"))
 
     _amount = db.Column(db.Float(asdecimal=True))
+
+    @staticmethod
+    def as_grid():
+        muns_grid = MunsGrid(Housemate.names(), Housemate.names(), "Muns")
+        for mun in Cashflow.query.all():
+            muns_grid[mun.to_name][mun.from_name] = mun.amount
+        return muns_grid
 
     @property
     def amount(self):
@@ -100,65 +157,29 @@ class Cashflow(db.Model):
     def __repr__(self):
         return "{} owes £{0:,.2f} to {}".format(self.to_name, self.amount, self.from_name)
 
+Pair = namedtuple("Pair", ("model", "grid"))
 
-def load_housemates():
-    housemates_grid = ConfigGrid()
-    housemates_grid.load_from_path(path_for("config", "housemates.csv"))
-    for housemate in housemates_grid.cells:
-        db.session.add(Housemate(name=housemate.row))
-
-
-def load_chores():
-    chores_grid = ConfigGrid()
-    chores_grid.load_from_path(path_for("config", "chores.csv"))
-    for chore in chores_grid.cells:
-        start_date = datetime.datetime.strptime(chore.col, "%d/%m/%Y")
-        end_date = start_date + datetime.timedelta(days=7)
-        chore = Chore(title=chore.value, who_id=chore.row, start_date=start_date, end_date=end_date)
-        db.session.add(chore)
+obj_map = {"housemates": Pair(Housemate, HousematesGrid),
+               "muns": Pair(Cashflow, MunsGrid),
+               "chores": Pair(Chore, ChoresGrid)}
 
 
-def load_muns():
-    debts_grid = ConfigGrid()
-    debts_grid.load_from_path(path_for("config", "muns.csv"))
-    for debt in debts_grid.cells:
-        if not debt.row == debt.col:
-            db.session.add(Cashflow(to_name=debt.row, from_name=debt.col, _amount=float(debt.value)))
+def load_config(config_name):
+    with open(path_for("config", "{}.csv".format(config_name)), "r") as f:
+        grid = obj_map[config_name].grid.from_csv_file(f)
+    grid.add_to_db()
 
 
-def export_housemates():
-    housemates = Housemate.query.all()
-    housemates_grid = ConfigGrid()
-    housemates_grid.load_from_grid_positions([Cell(row=housemate.name,
-                                                   col="pointless",
-                                                   value="more pointless") for housemate in housemates])
-    housemates_grid.save_to_file(path_for("exports", timestamp("{} - housemates.csv")))
-
-
-def save_chores():
-    chores = Chore.query.all()
-    chores_grid = ConfigGrid()
-    chores_grid.load_from_grid_positions([Cell(row=chore.who_id,
-                                               col=chore.start_date,
-                                               value=chore.title) for chore in chores])
-    chores_grid.save_to_file(path_for("exports", timestamp("{} - chores.csv")))
-
-
-def export_muns():
-    muns = Cashflow.query.all()
-    muns_grid = ConfigGrid()
-    muns_grid.load_from_grid_positions([Cell(row=mun.from_name,
-                                             col=mun.to_name,
-                                             value=mun.amount) for mun in muns])
-    muns_grid.save_to_file(path_for("exports", timestamp("{} - muns.csv")))
+def export_config(config_name):
+    with open(path_for("exports", timestamp("{}" + " - {}.csv".format(config_name))), "w") as f:
+        grid = obj_map[config_name].model.as_grid()
+        grid.save_to_file(f)
 
 
 def export_database():
-    export_housemates()
-    save_chores()
-    export_muns()
+    for config in ("housemates", "muns", "chores"):
+        export_config(config)
 
 
 def save_database():
-    shutil.copy(path_for("database.db"), path_for("backups", timestamp("{} - database.db")))
-
+    shutil.copy(path_for("database", "database.db"), path_for("backups", timestamp("{} - database.db")))

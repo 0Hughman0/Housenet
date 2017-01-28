@@ -11,7 +11,7 @@ def create_app(config="default"):
     db.app = app
     db.init_app(app)
 
-    from housenet.views import views
+    from housenet.base_app import views
 
     from housenet import blueprints
     for blueprint in blueprints:

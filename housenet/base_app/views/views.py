@@ -3,10 +3,9 @@ from io import BytesIO
 
 from flask import request, render_template, send_file
 
-from .. import base_app
-from ..database import db
-from ..database.models import Housemate, Cashflow
-from ..utilities import path_for
+from ...base_app import base_app
+from ...database import db
+from ...database.models import Housemate, Cashflow
 
 
 @base_app.route('/')
@@ -15,7 +14,7 @@ def home():
     data = []
     for housemate in housemates:
         data.append(tuple((housemate.name, housemate.current_chore.title)))
-    return render_template("home.html", title="Home", data=data)
+    return render_template("base_app/home.html", title="Home", data=data)
 
 
 @base_app.route("/profile/<name>", methods=["POST", "GET"])
@@ -36,7 +35,7 @@ def profile(name):
         debts = (cashflow.as_tuple for cashflow in housemate.out_flow)
         debits = (cashflow.as_tuple for cashflow in housemate.in_flow)
         quits = (cashflow.as_tuple for cashflow in housemate.quits)
-        return render_template("profile.html", title=name, current_chore=current_chore, debts=debts, debits=debits,
+        return render_template("base_app/profile.html", title=name, current_chore=current_chore, debts=debts, debits=debits,
                                quits=quits)
     return "<a>You're drunk, go </a><a href='/'>home</a>"
 

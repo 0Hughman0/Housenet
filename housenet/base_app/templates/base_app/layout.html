@@ -1,4 +1,4 @@
-{% extends "bootstrap/base.html" %}
+{% extends "base_app/bootstrap/base.html" %}
 
 {% block navbar %}
 <! block navbar start>
@@ -11,7 +11,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="{{ url_for("home") }}">Home</a>
+                <a class="navbar-brand" href="{{ url_for("base_app.home") }}">Home</a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -19,7 +19,7 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Select Housemate<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                         {% for name in names %}
-                            <li><a href="{{ url_for("profile", name=name) }}">{{ name }}</a></li>
+                            <li><a href="{{ url_for("base_app.profile", name=name) }}">{{ name }}</a></li>
                         {% endfor %}
                         </ul>
                     </li>

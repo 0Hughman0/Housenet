@@ -56,3 +56,5 @@ Temporary Items
 *.pyc
 
 # Migrations contents
+housenet/database/migrations/*
+/tests.py

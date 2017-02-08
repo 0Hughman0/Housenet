@@ -3,7 +3,12 @@ import itertools
 import random
 import shutil
 from os import path
-import configparser
+
+# Python version < 3.5
+try:
+    import stdconfigparser as configparser
+except ImportError:
+    import configparser
 
 from ez_grid import Grid
 import click
@@ -15,8 +20,10 @@ from housenet.utilities import path_for
 
 CONFIG_FOLDER = path.dirname(path.realpath(__file__))
 
+
 def to_date(string):
     return datetime.datetime.strptime(string, "%d/%m/%Y").date()
+
 
 def load_housemates(config):
     names = config["Housemates"].getlist("names")
@@ -42,15 +49,15 @@ def load_chores(config, housemates):
         duration = config.gettimedelta("Chores", "duration")
         grid = generate_chores(housemates,
                                config["Chores"].getlist("names"),
-                               config.get("Chores", "start_date"),
-                               config.get("Chores", "end_date"),
+                               config.getdate("Chores", "start_date"),
+                               config.getdate("Chores", "end_date"),
                                duration)
     else:
         with open(path.join(CONFIG_FOLDER, "chores.csv")) as f:
             grid = Grid.from_csv_file(f)
             duration = to_date(grid.col_hds[1]) - to_date(grid.col_hds[0])
     for chore in grid.cells:
-        start_date = to_date(chore.col)
+        start_date = to_date(chore.col) if isinstance(chore.col, str) else chore.col
         db.session.add(Chore(title=chore.value,
                              who_id=chore.row,
                              start_date=start_date,
@@ -84,7 +91,11 @@ def generate_chores(housemates, chore_names, start_date, end_date, duration, ran
 def move_profile_pics(names):
     for name in names:
         filename = "{}.jpeg".format(name)
-        shutil.copyfile(path.join(CONFIG_FOLDER, "profile_pics", filename), path_for("static", filename))
+        try:
+            shutil.copyfile(path.join(CONFIG_FOLDER, "profile_pics", filename), path_for("static", filename))
+        except FileNotFoundError:
+            click.echo(("Couldn't find a file named {} in profile_pics folder."
+                        " To fix: add one, and run reloadconfig --name=pics").format(filename))
 
 
 def get_config():

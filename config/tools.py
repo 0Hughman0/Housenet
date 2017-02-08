@@ -39,7 +39,7 @@ def load_muns(config, housemates):
         with open(path.join(CONFIG_FOLDER, "muns.csv")) as f:
             grid = Grid.from_csv_file(f)
     for cell in grid.cells:
-        if cell.value:
+        if cell.col != cell.row:
             db.session.add(Cashflow(to_name=cell.row, from_name=cell.col, _amount=float(cell.value)))
     return grid
 
@@ -149,10 +149,10 @@ def register_config_tools(app):
         db.session.commit()
         click.echo("Success")
         click.echo("Loading new data")
+        click.echo(name)
         if name in ("chores", "all"):
             load_chores(config, names)
         if name in ("muns", "all"):
-            click.echo("b")
             load_muns(config, names)
         db.session.commit()
         click.echo("Done!")

@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="alert alert-success" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+        <h3>This weeks chore:
+            <span class="label label-danger">{{current_chore.title}}</span>
+            <a href="{{ url_for("base_app.get_ical", name=title) }}">
+                <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+            </a>
+        </h3>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4>Your IOUs</h4></div>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="panel-body">
+                        <div class="col-md-4">
+                            <div class="panel panel-default">
+                                <form method="post" name="You Owe" id="you_owe">
+                                    <div class="panel-heading">You Owe</div>
+                                    <div class="panel-body">
+                                        <table class="table">
+                                            <tr>
+                                                <th>To</th><th>Amount</th><th>Pay Back</th>
+                                            </tr>
+                                            {% for _, to, amount in debts %}
+                                            <tr>
+                                                <td>{{ to }}</td><td>£{{ amount }}</td>
+                                                <td>
+                                                    <div class="input-group">
+                                                        <div class="input-group-addon">£</div>
+                                                        <input class="form-control" type="number" name="{{ to }}" step="any">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td colspan="3">... No-one! You're in the clear :D</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="panel panel-default">
+                                <form method="post" name="I'm Owed" id="im_owed">
+                                    <div class="panel-heading">I'm Owed:</div>
+                                    <div class="panel-body">
+                                        <table class="table">
+                                            <tr>
+                                                <th>From</th><th>Amount</th><th>Amount Paid Back</th>
+                                            </tr>
+                                            {% for from, _, amount in debits %}
+                                            <tr>
+                                                <td>{{ from }}</td><td>£{{ amount }}</td>
+                                                <td>
+                                                    <div class="input-group">
+                                                        <div class="input-group-addon">£</div>
+                                                        <input class="form-control" type="number" name="{{ from }}" step="any">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td colspan="3">Nowt... consider being more generous</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
+                                </form>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="panel panel-default">
+                                    <form method="post" name="Quits With" id="quits">
+                                        <div class="panel-heading">You're Quits with:</div>
+                                        <div class="panel-body">
+                                            <table class="table">
+                                                <tr>
+                                                    <th>Person</th><th>Now They Owe You</th>
+                                                </tr>
+                                                {% for from, to, _ in quits %}
+                                                <tr>
+                                                    <td>{{ from }}</td>
+                                                    <td>
+                                                    <div class="input-group">
+                                                        <div class="input-group-addon">£</div>
+                                                        <input class="form-control" type="number" name="{{ from }}" step="any">
+                                                    </div>
+                                                    </td>
+                                                </tr>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="2">No-one! Maybe You need to put some effort in</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                        </div>
+                                    </form>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-md-offset-4">
+                                    <div class="row">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Reason" aria-describedby="basic-addon1" id="reason_box">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-default" type="button" onclick="submit()">Update</button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <script>
+        function negateArray(array){
+            $.each( array, function( i, item ) {
+                item["value"] = -item["value"];
+            });
+            return array;
+        }
+        function submit(){
+                var data = {};
+                data["you_owe"] = JSON.stringify(negateArray($("#you_owe").serializeArray()));
+                data["your_owed"] = JSON.stringify($("#im_owed").serializeArray());
+                data["quits"] = JSON.stringify(negateArray($("#quits").serializeArray()));
+                data["reason"] = JSON.stringify($("#reason_box").val());
+                $.ajax(
+                {
+                    url: "{{url_for("base_app.profile", name=title)}}",
+                    data: data,
+                    type: "POST"
+                }).done(function(msg){
+                    window.location.reload(true);
+                });
+
+        }
+        $(document).ready(function()
+        {
+        });
+
+    </script>
+{% endblock %}

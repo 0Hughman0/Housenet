@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block style_extensions %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="css/datatables.min.css") }}"/>
+{% endblock %}
+{% block extensions %}
+    <script type="text/javascript" src="{{ url_for("static", filename="js/datatables.min.js") }}"></script>
+    <script src="{{ url_for("static", filename="js/moment.min.js") }}"></script>
+    <script src="{{ url_for("static", filename="js/datetime-moment.js") }}"></script>
+{% endblock %}
+{% block content %}
+    <table id="transactions" class="display" width="100%" cellspacing="0">
+        <thead>
+            <tr>
+                <th>When</th>
+                <th>Reason</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+    </table>
+    <script>
+    $(document).ready(function() {
+        $.fn.dataTable.moment("DD/MM/YYYY HH:mm");
+        $('#transactions').DataTable({
+            "ajax": "{{ url_for("base_app.get_transactions") }}",
+            "order": [[ 0, "desc" ]]
+        });
+    });
+    </script>
+{% endblock %}

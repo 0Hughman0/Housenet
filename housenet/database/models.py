@@ -1,37 +1,8 @@
 import datetime
-import shutil
-from collections import namedtuple
-
 
 import icalendar as ical
-from ez_grid import Grid
 
 from . import db
-from ..utilities import path_for, timestamp
-
-
-class HousematesGrid(Grid):
-
-    def add_to_db(self):
-        for housemate in self.cells:
-            db.session.add(Housemate(name=housemate.row))
-
-
-class ChoresGrid(Grid):
-
-    def add_to_db(self):
-        for chore in self.cells:
-            start_date = datetime.datetime.strptime(chore.col, "%d/%m/%Y")
-            end_date = start_date + datetime.timedelta(days=7)
-            db.session.add(Chore(title=chore.value, who_id=chore.row, start_date=start_date, end_date=end_date))
-
-
-class MunsGrid(Grid):
-
-    def add_to_db(self):
-        for debt in self.cells:
-            if not debt.row == debt.col:
-                db.session.add(Cashflow(to_name=debt.row, from_name=debt.col, _amount=float(debt.value)))
 
 
 class Housemate(db.Model):
@@ -54,13 +25,6 @@ class Housemate(db.Model):
     @staticmethod
     def names():
         return (housemate.name for housemate in Housemate.query.all())
-
-    @staticmethod
-    def as_grid():
-        housemates_grid = HousematesGrid(Housemate.names(), ["null"], "Housemates")
-        for housemate in Housemate.query.all():
-            housemates_grid[housemate.name]["null"] = "null"
-        return housemates_grid
 
     @property
     def current_chore(self):
@@ -101,13 +65,6 @@ class Chore(db.Model):
         dates.sort()
         return dates
 
-    @staticmethod
-    def as_grid():
-        chores_grid = ChoresGrid(Housemate.names(), Chore.dates(), "Chores")
-        for chore in Chore.query.all():
-            chores_grid[chore.who_id][chore.start_date] = chore.title
-        return chores_grid
-
 
 class Cashflow(db.Model):
     __tablename__ = "cashflows"
@@ -117,14 +74,7 @@ class Cashflow(db.Model):
     to_name = db.Column(db.String, db.ForeignKey("housemates.name"))
     from_name = db.Column(db.String, db.ForeignKey("housemates.name"))
 
-    _amount = db.Column(db.Float(asdecimal=True))
-
-    @staticmethod
-    def as_grid():
-        muns_grid = MunsGrid(Housemate.names(), Housemate.names(), "Muns")
-        for mun in Cashflow.query.all():
-            muns_grid[mun.to_name][mun.from_name] = mun.amount
-        return muns_grid
+    _amount = db.Column(db.Float(asdecimal=True, decimal_return_scale=3))
 
     @property
     def amount(self):
@@ -153,33 +103,33 @@ class Cashflow(db.Model):
     def add(self, amount):
         self._amount += amount
         self.mirror._amount += -amount
+        from_name = self.from_name
+        to_name = self.to_name
+        transaction = Transaction(from_=from_name,
+                                  to=to_name,
+                                  amount=-amount,
+                                  time=datetime.datetime.now())
+        return transaction
+
 
     def __repr__(self):
-        return "{} owes £{0:,.2f} to {}".format(self.to_name, self.amount, self.from_name)
-
-Pair = namedtuple("Pair", ("model", "grid"))
-
-obj_map = {"housemates": Pair(Housemate, HousematesGrid),
-               "muns": Pair(Cashflow, MunsGrid),
-               "chores": Pair(Chore, ChoresGrid)}
+        return "{0} owes £{1:,.2f} to {2}".format(self.to_name, self.amount, self.from_name)
 
 
-def load_config(config_name):
-    with open(path_for("config", "{}.csv".format(config_name)), "r") as f:
-        grid = obj_map[config_name].grid.from_csv_file(f)
-    grid.add_to_db()
+class Transaction(db.Model):
 
+    id = db.Column(db.Integer, primary_key=True)
 
-def export_config(config_name):
-    with open(path_for("exports", timestamp("{}" + " - {}.csv".format(config_name))), "w") as f:
-        grid = obj_map[config_name].model.as_grid()
-        grid.save_to_file(f)
+    to = db.Column(db.String, db.ForeignKey("housemates.name"))
+    from_ = db.Column(db.String, db.ForeignKey("housemates.name"))
 
+    amount = db.Column(db.Float(asdecimal=True))
 
-def export_database():
-    for config in ("housemates", "muns", "chores"):
-        export_config(config)
+    reason = db.Column(db.String(250))
+    time = db.Column(db.DateTime)
 
-
-def save_database():
-    shutil.copy(path_for("database", "database.db"), path_for("backups", timestamp("{} - database.db")))
+    def to_row(self):
+        return [self.time.strftime("%d/%m/%Y %H:%M"),
+                self.reason,
+                self.from_,
+                self.to, "£{0:,.2f}".format(self.amount)]

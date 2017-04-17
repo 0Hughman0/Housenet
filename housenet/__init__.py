@@ -3,10 +3,12 @@ from flask import Blueprint
 
 from .database.models import Housemate
 
-blueprints = []
 
 base_app = Blueprint("base_app",
                      __name__)
+
+# Kinda pointless, but all contents will be registered in app_factory.py
+blueprints = []
 blueprints.append(base_app)
 
 

@@ -128,7 +128,7 @@ def register_config_tools(app):
         click.echo("Moving profile pics to static folder")
         move_profile_pics(names)
         click.echo("Success")
-        click.echo("Initialisation complete! Use 'flask run' to start the server")
+        click.echo("Initialisation complete! Use 'flask run --host="0.0.0.0" --with-threads' to start the server")
 
     @app.cli.command(help="reload db from .csv files: chores, muns, pics or all")
     @click.option("--name", "-n")

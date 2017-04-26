@@ -18,6 +18,7 @@ class HousenetBaseTestCase:
         pass
 
     def test_add_amount(self):
+        self.app.post("/profile/Person%201/", data={"t": 1})
 
 
 class CliTestsCase(HousenetBaseTestCase, unittest.TestCase):
@@ -25,6 +26,11 @@ class CliTestsCase(HousenetBaseTestCase, unittest.TestCase):
     def test_save_db(self):
         pass
 
+
+class TestHousenetInit(unittest.TestCase):
+
+    def setUp(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()

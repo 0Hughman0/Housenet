@@ -13,14 +13,16 @@ class Housemate(db.Model):
     chores = db.relationship("Chore", backref="who", lazy="dynamic")
 
     out_flow = db.relationship("Cashflow",
-                               primaryjoin="and_(Cashflow.from_name==Housemate.name, Cashflow._amount > 0)",
+                               primaryjoin="and_(Cashflow.from_name==Housemate.name, Cashflow._amount > 0.001)",
                                backref="to")
     in_flow = db.relationship("Cashflow",
-                              primaryjoin="and_(Cashflow.to_name==Housemate.name, Cashflow._amount > 0)",
+                              primaryjoin="and_(Cashflow.to_name==Housemate.name, Cashflow._amount > 0.001)",
                               backref="from_")
 
     quits = db.relationship("Cashflow",
-                            primaryjoin="and_(Cashflow.to_name==Housemate.name, Cashflow._amount==0)")
+                            primaryjoin=("and_(Cashflow.to_name==Housemate.name,"
+                                              "Cashflow._amount < 0.001,"
+                                              "Cashflow._amount > -0.001)"))
 
     @staticmethod
     def names():
@@ -110,7 +112,6 @@ class Cashflow(db.Model):
                                   amount=-amount,
                                   time=datetime.datetime.now())
         return transaction
-
 
     def __repr__(self):
         return "{0} owes £{1:,.2f} to {2}".format(self.to_name, self.amount, self.from_name)

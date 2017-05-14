@@ -73,6 +73,8 @@ def date_range(from_, to, step):
 
 
 def generate_chores(housemates, chore_names, start_date, end_date, duration, randomly=False):
+    if len(housemates) > len(chore_names):
+        click.echo("Warning: You have more housemates than chores")
     dates = (day for day in date_range(start_date, end_date, duration))
     grid = Grid(housemates, dates)
     chore_cycle = itertools.cycle(chore_names)
@@ -102,7 +104,7 @@ def get_config():
     config = configparser.ConfigParser(converters={"date": lambda x: to_date(x),
                                                    "timedelta": lambda x: datetime.timedelta(days=int(x)),
                                                    "list": lambda x: x.split(", ")})
-    config.read(path.join(CONFIG_FOLDER, "config.ini"))
+    config.read(path.join(CONFIG_FOLDER, "config.ini"), encoding="UTF-8")
     return config
 
 

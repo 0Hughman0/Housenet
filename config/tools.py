@@ -14,7 +14,7 @@ from ez_grid import Grid
 import click
 
 from housenet.database import db
-from housenet.database.models import Chore, Housemate, Cashflow
+from housenet.database.database import Chore, Housemate, Cashflow
 from housenet.utilities import path_for
 
 

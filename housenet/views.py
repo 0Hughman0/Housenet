@@ -5,7 +5,7 @@ from flask import request, render_template, send_file, json
 
 from housenet import base_app
 from housenet.database import db
-from housenet.database.models import Housemate, Cashflow, Transaction
+from housenet.database.database import Housemate, Cashflow, Transaction
 
 
 @base_app.route('/')
@@ -33,9 +33,9 @@ def profile(name):
                 if not debt:
                     continue
                 amount = Decimal(payment['value'])
-                if payment_type == "your_owed":
-                    debt = debt.mirror
-                    amount = -amount
+                # if payment_type == "your_owed": # Creates confusion about who put what in
+                #     debt = debt.mirror
+                #     amount = -amount
                 transaction = debt.add(amount)
                 transaction.reason = reason
                 db.session.add(transaction)

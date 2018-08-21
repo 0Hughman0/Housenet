@@ -34,7 +34,7 @@ def create_app(config="DEFAULT"):
     from housenet.cli import register_commands
     register_commands(app, db)
 
-    from housenet import add_global_context_processors
+    from housenet.app import add_global_context_processors
     add_global_context_processors(app)
 
     return app, db

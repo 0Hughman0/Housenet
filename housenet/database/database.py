@@ -1,8 +1,12 @@
 import datetime
+import shutil
 
+from flask_sqlalchemy import SQLAlchemy
 import icalendar as ical
 
-from . import db
+from housenet.utilities import path_for, timestamp
+
+db = SQLAlchemy()
 
 
 class Housemate(db.Model):
@@ -134,3 +138,7 @@ class Transaction(db.Model):
                 self.reason,
                 self.from_,
                 self.to, "£{0:,.2f}".format(self.amount)]
+
+
+def save_database():
+    shutil.copy(path_for("database", "database.db"), path_for("backups", timestamp("{} - database.db")))

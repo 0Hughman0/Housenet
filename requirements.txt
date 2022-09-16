@@ -9,7 +9,7 @@ Flask-SQLAlchemy==2.1
 icalendar==3.10
 itsdangerous==0.24
 Jinja2==2.8.1
-Mako==1.0.6
+Mako==1.2.2
 MarkupSafe==0.23
 python-dateutil==2.5.3
 python-editor==1.0.3
